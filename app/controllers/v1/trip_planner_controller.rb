@@ -22,7 +22,6 @@ module V1
 
       if valid_country_code(country_code)
         # use @country_data to get the capital.
-
         @country_data.each do |country|
           if country_code == country['id']
             response['country_code'] = country_code
@@ -38,8 +37,33 @@ module V1
       render json: response
     end
 
-    def capitals_by_area
+    def capitals_by_square
       # sort by lat and long - then can return the capitals within there
+      coords = {
+        min_lat: params['min_lat'].to_f,
+        min_long: params['min_long'].to_f,
+        max_lat: params['max_lat'].to_f,
+        max_long: params['max_long'].to_f,
+      }
+      response = {
+        capitals: []
+      }
+
+      @country_data.each do |country|
+        if ( country['latitude'] != '' && country['longitude'] != '' )
+          # check max/min of input square
+          is_within_area = ( country['latitude'].to_f >= coords[:min_lat] &&
+            country['latitude'].to_f <= coords[:max_lat] &&
+            country['longitude'].to_f >= coords[:min_long] &&
+            country['longitude'].to_f <= coords[:max_long] )
+
+          if is_within_area
+            response[:capitals] << country['capitalCity']
+          end
+        end
+      end
+
+      render json: response
     end
 
     def path_between

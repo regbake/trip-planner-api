@@ -3,6 +3,6 @@ Rails.application.routes.draw do
   namespace 'v1' do
     get 'index', to: 'trip_planner#index'
     get 'capital_by_country', to: 'trip_planner#capital_by_country'
-    get 'capital_by_square', to: 'trip_planner#capital_by_square'
+    get 'capitals_by_square', to: 'trip_planner#capitals_by_square'
   end
 end

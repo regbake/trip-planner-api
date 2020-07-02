@@ -12,7 +12,7 @@ RSpec.describe 'setup tests' do
 end
 
 RSpec.describe 'trip planner API', :type => :request do
-  context 'an /index endpoint that serves JSON' do
+  xcontext 'an /index endpoint that serves JSON' do
     before(:all) do
       get '/v1/index'
     end
@@ -29,7 +29,7 @@ RSpec.describe 'trip planner API', :type => :request do
     end
   end
 
-  context 'an endpoint that returns the capital city' do
+  xcontext 'an endpoint that returns the capital city' do
     # should GET a 3 digit country code and receive a capital city
     # should return 'not found' if unavailable or edge-case (numbers, >3 char)
 
@@ -59,6 +59,12 @@ RSpec.describe 'trip planner API', :type => :request do
       expect(JSON.parse(response.body)['response']).to eq('no results found')
     end
 
+    it 'returns "no results" for a non-3 length string' do
+      get '/v1/capital_by_country', :params => {code: 'ab'}
+
+      expect(JSON.parse(response.body)['response']).to eq('no results found')
+    end
+
     it 'returns the capital of CHL as Santiago' do
       get '/v1/capital_by_country', :params => {code: 'Chl'}
 
@@ -68,15 +74,28 @@ RSpec.describe 'trip planner API', :type => :request do
 
   context 'and endpoint that returns capital cities within lat/long' do
     it 'returns a valid status code' do
-      get '/v1/capital_by_square', :params => {
-        min_lat: '',
-        max_lat: '',
-        min_long: '',
-        max_long: ''
+      get '/v1/capitals_by_square', :params => {
+        # bottom left to top right of north america
+        min_lat: '8.000',
+        max_lat: '67.000',
+        min_long: '-170.000',
+        max_long: '-56.000'
       }
 
       expect(response).to have_http_status(200)
       expect(response).not_to have_http_status(500)
+    end
+
+    it 'finds a capital city' do
+      get '/v1/capitals_by_square', :params => {
+        # around Chile, should target Santiago
+        min_lat: '-30.000',
+        max_lat: '-37.000',
+        min_long: '-76.000',
+        max_long: '-66.000'
+      }
+
+      expect(JSON.parse(response.body)['capitals']).not_to be_empty
     end
   end
 
