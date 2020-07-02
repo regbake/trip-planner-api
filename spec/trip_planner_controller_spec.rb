@@ -1,4 +1,4 @@
-require 'rails_helper'
+require 'rails_helper' # include for requests
 
 RSpec.describe 'setup tests' do
   it 'should pass' do
@@ -6,13 +6,13 @@ RSpec.describe 'setup tests' do
     expect(20).not_to be(10)
   end
 
-  xit 'should throw failure' do
+  xit 'should throw failure to verify no false positives' do
     expect(10).to be(20)
   end
 end
 
 RSpec.describe 'trip planner API', :type => :request do
-  xcontext 'an /index endpoint that serves JSON' do
+  context 'an /index endpoint that serves JSON' do
     before(:all) do
       get '/v1/index'
     end
@@ -29,26 +29,28 @@ RSpec.describe 'trip planner API', :type => :request do
     end
   end
 
-  xcontext 'an endpoint that returns the capital city' do
+  context 'an endpoint that returns the capital city' do
     # should GET a 3 digit country code and receive a capital city
     # should return 'not found' if unavailable or edge-case (numbers, >3 char)
 
     # Country: CHL, name: Chile, capital Santiago, long: "-70.6475" lat: "-33.475"
     # Country: CHN, Name: China, Capital: Beijing, long: "116.286" lat: "40.0495"
-
-    # before(:all) do
-
-    # end
-
     it 'returns a valid status code' do
       get '/v1/capital_by_country', :params => {code: 'CHL'}
 
       expect(response).to have_http_status(200)
       expect(response).not_to have_http_status(404)
+      expect(response).not_to have_http_status(500)
     end
 
     it 'returns "no results" for a non-numeric code' do
       get '/v1/capital_by_country', :params => {code: 'a99'}
+
+      expect(JSON.parse(response.body)['response']).to eq('no results found')
+    end
+
+    it 'returns "no results" for a non-numeric code' do
+      get '/v1/capital_by_country', :params => {code: 'a**'}
 
       expect(JSON.parse(response.body)['response']).to eq('no results found')
     end
@@ -70,6 +72,12 @@ RSpec.describe 'trip planner API', :type => :request do
 
       expect(JSON.parse(response.body)['capital_city']).to eq('Santiago')
     end
+
+    it 'returns the capital of CHN as Beijing' do
+      get '/v1/capital_by_country', :params => {code: 'chn'}
+
+      expect(JSON.parse(response.body)['capital_city']).to eq('Beijing')
+    end
   end
 
   context 'and endpoint that returns capital cities within lat/long' do
@@ -86,16 +94,30 @@ RSpec.describe 'trip planner API', :type => :request do
       expect(response).not_to have_http_status(500)
     end
 
-    it 'finds a capital city' do
+    it 'finds a capital city in Chile' do
       get '/v1/capitals_by_square', :params => {
         # around Chile, should target Santiago
-        min_lat: '-30.000',
-        max_lat: '-37.000',
+        max_lat: '-30.000',
+        min_lat: '-37.000',
         min_long: '-76.000',
         max_long: '-66.000'
       }
 
       expect(JSON.parse(response.body)['capitals']).not_to be_empty
+      expect(JSON.parse(response.body)['capitals'][0]).to eq('Santiago')
+    end
+
+    it 'finds capital cities in Europe' do
+      get '/v1/capitals_by_square', :params => {
+        # Italy to Russia
+        max_lat: '64.000',
+        min_lat: '38.000',
+        min_long: '8.000',
+        max_long: '50.000'
+      }
+
+      expect(JSON.parse(response.body)['capitals']).not_to be_empty
+      expect(JSON.parse(response.body)['capitals']).to include('Vienna')
     end
   end
 
