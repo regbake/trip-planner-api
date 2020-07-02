@@ -30,17 +30,56 @@ RSpec.describe 'trip planner API', :type => :request do
   end
 
   context 'an endpoint that returns the capital city' do
-    # should POST a 3 digit country code and receive a capital city
+    # should GET a 3 digit country code and receive a capital city
     # should return 'not found' if unavailable or edge-case (numbers, >3 char)
 
     # Country: CHL, name: Chile, capital Santiago, long: "-70.6475" lat: "-33.475"
     # Country: CHN, Name: China, Capital: Beijing, long: "116.286" lat: "40.0495"
 
+    # before(:all) do
+
+    # end
+
+    it 'returns a valid status code' do
+      get '/v1/capital_by_country', :params => {code: 'CHL'}
+
+      expect(response).to have_http_status(200)
+      expect(response).not_to have_http_status(404)
+    end
+
+    it 'returns "no results" for a non-numeric code' do
+      get '/v1/capital_by_country', :params => {code: 'a99'}
+
+      expect(JSON.parse(response.body)['response']).to eq('no results found')
+    end
+
+    it 'returns "no results" for a non-3 length string' do
+      get '/v1/capital_by_country', :params => {code: 'abcd'}
+
+      expect(JSON.parse(response.body)['response']).to eq('no results found')
+    end
+
+    it 'returns the capital of CHL as Santiago' do
+      get '/v1/capital_by_country', :params => {code: 'Chl'}
+
+      expect(JSON.parse(response.body)['capital_city']).to eq('Santiago')
+    end
   end
 
   context 'and endpoint that returns capital cities within lat/long' do
+    it 'returns a valid status code' do
+      get '/v1/capital_by_square', :params => {
+        min_lat: '',
+        max_lat: '',
+        min_long: '',
+        max_long: ''
+      }
+
+      expect(response).to have_http_status(200)
+      expect(response).not_to have_http_status(500)
+    end
   end
 
-  context 'an endpoint that returns an efficient route between 4 capitals' do
+  xcontext 'an endpoint that returns an efficient route between 4 capitals' do
   end
 end
