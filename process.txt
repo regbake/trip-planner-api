@@ -1,0 +1,21 @@
+SupplyHound TakeHome exercise
+
+Goal: Create an API
+
+We will be working with Rails and create an API with the --api flag
+	We will not be utilizing a client-side/View layer and will not be using a database
+
+	We will be using Rspec for testing, using more of a TDD approach
+
+	Add the RSpec gem and init
+		create /spec
+	add Pry for testing
+	uncomment the jbuilder gem
+
+	set up RSpec
+		write sanity tests
+
+	start with capital city by country
+
+	Need to handle the Bank API Data
+	Added gem 'rest-client'
