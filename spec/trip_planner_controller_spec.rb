@@ -103,8 +103,10 @@ RSpec.describe 'trip planner API', :type => :request do
         max_long: '-66.000'
       }
 
-      expect(JSON.parse(response.body)['capitals']).not_to be_empty
-      expect(JSON.parse(response.body)['capitals'][0]).to eq('Santiago')
+      capitals = JSON.parse(response.body)['capitals']
+
+      expect(capitals).not_to be_empty
+      expect(capitals[0]).to eq('Santiago')
     end
 
     it 'finds capital cities in Europe' do
@@ -116,8 +118,25 @@ RSpec.describe 'trip planner API', :type => :request do
         max_long: '50.000'
       }
 
-      expect(JSON.parse(response.body)['capitals']).not_to be_empty
-      expect(JSON.parse(response.body)['capitals']).to include('Vienna')
+      capitals = JSON.parse(response.body)['capitals']
+
+      expect(capitals).not_to be_empty
+      expect(capitals).to include('Vienna')
+    end
+
+    it 'should find no capital cities' do
+      get '/v1/capitals_by_square', :params => {
+        # way north
+        max_lat: '84.000',
+        min_lat: '79.000',
+        min_long: '123.000',
+        max_long: '209.000'
+      }
+
+      capitals = JSON.parse(response.body)['capitals']
+
+      expect(capitals).to be_empty
+      expect(capitals).not_to include('Vienna')
     end
   end
 

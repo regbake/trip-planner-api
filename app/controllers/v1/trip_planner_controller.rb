@@ -21,7 +21,6 @@ module V1
       }
 
       if valid_country_code(country_code)
-        # use @country_data to get the capital.
         @country_data.each do |country|
           if country_code == country['id']
             response['country_code'] = country_code
@@ -75,7 +74,7 @@ module V1
     private
 
     def get_country_data
-      # get the data from the Country API
+      # get ALL COUNTRY data from the Country API
       response = RestClient.get('http://api.worldbank.org/v2/country?format=json')
       # all country data - array of objects
       JSON.parse(response)[1]
